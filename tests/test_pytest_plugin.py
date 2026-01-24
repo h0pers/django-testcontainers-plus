@@ -14,7 +14,7 @@ class TestPytestPlugin:
         """Test applying simple settings updates."""
         updates = {"TEST_SETTING": "test_value"}
 
-        pytest_plugin._apply_settings_updates(django_settings, updates)
+        pytest_plugin._apply_settings_updates(updates)
 
         assert hasattr(django_settings, "TEST_SETTING")
         assert django_settings.TEST_SETTING == "test_value"
@@ -35,7 +35,7 @@ class TestPytestPlugin:
             }
         }
 
-        pytest_plugin._apply_settings_updates(django_settings, updates)
+        pytest_plugin._apply_settings_updates(updates)
 
         assert hasattr(django_settings, "DATABASES")
         assert "test_db" in django_settings.DATABASES
@@ -49,7 +49,7 @@ class TestPytestPlugin:
         updates = {"TEST_ORIGINAL": "updated"}
 
         pytest_plugin._original_settings.clear()
-        pytest_plugin._apply_settings_updates(django_settings, updates)
+        pytest_plugin._apply_settings_updates(updates)
 
         assert pytest_plugin._original_settings["TEST_ORIGINAL"] == "original"
         assert django_settings.TEST_ORIGINAL == "updated"
@@ -69,7 +69,7 @@ class TestPytestPlugin:
         django_settings.TEST_RESTORE = "updated_value"
         django_settings.TEST_NEW = "new_value"
 
-        pytest_plugin._restore_settings(django_settings)
+        pytest_plugin._restore_settings()
 
         assert django_settings.TEST_RESTORE == "original_value"
         assert pytest_plugin._original_settings == {}
@@ -78,7 +78,7 @@ class TestPytestPlugin:
         """Test restoring when no original settings exist."""
         pytest_plugin._original_settings.clear()
 
-        pytest_plugin._restore_settings(django_settings)
+        pytest_plugin._restore_settings()
 
         assert pytest_plugin._original_settings == {}
 
@@ -105,7 +105,7 @@ class TestPytestPlugin:
         updates = {"NON_DICT_SETTING": {"key": "value"}}
 
         pytest_plugin._original_settings.clear()
-        pytest_plugin._apply_settings_updates(django_settings, updates)
+        pytest_plugin._apply_settings_updates(updates)
 
         assert django_settings.NON_DICT_SETTING == {"key": "value"}
         assert pytest_plugin._original_settings["NON_DICT_SETTING"] == "string_value"
@@ -119,7 +119,7 @@ class TestPytestPlugin:
         }
 
         pytest_plugin._original_settings.clear()
-        pytest_plugin._apply_settings_updates(django_settings, updates)
+        pytest_plugin._apply_settings_updates(updates)
 
         assert django_settings.SETTING_ONE == "value_one"
         assert django_settings.SETTING_TWO == "value_two"
