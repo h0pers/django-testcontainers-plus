@@ -45,7 +45,7 @@ def django_db_setup(
             del connections.__dict__["settings"]
 
         # Reconfigure connections with updated settings
-        connections._settings = connections.configure_settings(settings.DATABASES)
+        connections._settings = connections.configure_settings(settings.DATABASES)  # type: ignore[attr-defined]
 
         # Close all existing connections
         connections.close_all()
@@ -62,7 +62,7 @@ def django_db_setup(
             verbosity=request.config.option.verbose,
             interactive=False,
             keepdb=django_db_keepdb,
-            debug_sql=request.config.option.debug_sql if hasattr(request.config.option, 'debug_sql') else False,
+            debug_sql=getattr(request.config.option, "debug_sql", False),
             parallel=0,
             aliases=None,
             serialized_aliases=None,
