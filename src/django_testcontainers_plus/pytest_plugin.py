@@ -47,11 +47,8 @@ def django_db_setup(
         # Reconfigure connections with updated settings
         connections._settings = connections.configure_settings(settings.DATABASES)
 
-        # Recreate connections for each database alias that was updated
-        for alias in list(connections):
-            if alias in connections._connections:
-                connections._connections[alias].close()
-            connections._connections[alias] = connections.create_connection(alias)
+        # Close all existing connections so they'll be recreated with new settings
+        connections.close_all()
 
         for provider_name in _container_manager.active_containers.keys():
             print(f"Started {provider_name} container for testing")
