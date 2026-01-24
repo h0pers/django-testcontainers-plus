@@ -47,11 +47,12 @@ def django_db_setup(
         # Reconfigure connections with updated settings
         connections._settings = connections.configure_settings(settings.DATABASES)
 
-        # Close all existing connections so they'll be recreated with new settings
+        # Close all existing connections
         connections.close_all()
 
-        for provider_name in _container_manager.active_containers.keys():
-            print(f"Started {provider_name} container for testing")
+        # Explicitly recreate connections with new settings
+        for alias in settings.DATABASES:
+            connections[alias] = connections.create_connection(alias)
 
     # Now run pytest-django's database setup logic
     from django.test.utils import setup_databases, teardown_databases
