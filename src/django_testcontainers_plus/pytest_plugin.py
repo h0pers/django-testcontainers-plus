@@ -1,8 +1,6 @@
-from collections.abc import Generator
 from typing import Any
 
 import pytest
-from django.conf import settings
 
 from .manager import ContainerManager
 
@@ -10,41 +8,54 @@ _container_manager: ContainerManager | None = None
 _original_settings: dict[str, Any] = {}
 
 
-@pytest.fixture(scope="session", autouse=True)
-def django_testcontainers_setup(
-    django_db_setup: Any,
-) -> Generator[ContainerManager, None, None]:
-    """Automatically start and stop testcontainers for the test session.
+@pytest.hookimpl(trylast=True)
+def pytest_load_initial_conftests(
+    early_config: pytest.Config,
+    parser: pytest.Parser,
+    args: list[str],
+) -> None:
+    """Start testcontainers early in pytest lifecycle.
 
-    This fixture:
-    1. Runs before any tests
-    2. Detects needed containers from Django settings
-    3. Starts the containers
-    4. Updates Django settings with connection info
-    5. Cleans up containers after all tests complete
+    This hook runs after pytest-django configures DJANGO_SETTINGS_MODULE
+    (due to trylast=True) but before any fixtures execute, ensuring
+    containers are ready and settings are patched before django_db_setup.
 
     Args:
-        django_db_setup: pytest-django fixture that sets up databases
-
-    Yields:
-        ContainerManager instance with active containers
+        early_config: The pytest config object
+        parser: The pytest parser
+        args: Command line arguments
     """
     global _container_manager, _original_settings
 
-    _container_manager = ContainerManager(settings)
+    from django.conf import settings
 
+    if not settings.configured:
+        return
+
+    _container_manager = ContainerManager(settings)
     settings_updates = _container_manager.start_containers()
 
-    _apply_settings_updates(settings_updates)
+    _apply_settings_updates(settings, settings_updates)
 
     for provider_name in _container_manager.active_containers.keys():
         print(f"Started {provider_name} container for testing")
 
-    yield _container_manager
 
-    _restore_settings()
-    print("Stopping test containers...")
-    _container_manager.stop_containers()
+def pytest_unconfigure(config: pytest.Config) -> None:
+    """Stop testcontainers when pytest exits.
+
+    Args:
+        config: The pytest config object
+    """
+    global _container_manager, _original_settings
+
+    if _container_manager is not None:
+        from django.conf import settings
+
+        _restore_settings(settings)
+        print("Stopping test containers...")
+        _container_manager.stop_containers()
+        _container_manager = None
 
 
 @pytest.fixture(scope="session")
@@ -57,10 +68,11 @@ def testcontainers_manager() -> ContainerManager | None:
     return _container_manager
 
 
-def _apply_settings_updates(updates: dict[str, Any]) -> None:
+def _apply_settings_updates(settings: Any, updates: dict[str, Any]) -> None:
     """Apply settings updates and save originals for restoration.
 
     Args:
+        settings: Django settings module
         updates: Dict of settings to update
     """
     global _original_settings
@@ -80,13 +92,14 @@ def _apply_settings_updates(updates: dict[str, Any]) -> None:
             setattr(settings, key, value)
 
 
-def _restore_settings() -> None:
-    """Restore original settings values."""
+def _restore_settings(settings: Any) -> None:
+    """Restore original settings values.
+
+    Args:
+        settings: Django settings module
+    """
     global _original_settings
 
     for key, value in _original_settings.items():
         setattr(settings, key, value)
     _original_settings.clear()
-
-
-pytest_plugins = ["django_testcontainers_plus.pytest_plugin"]
