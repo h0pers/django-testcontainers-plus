@@ -6,9 +6,7 @@ from django.conf import settings
 from django.db import connections
 
 
-def apply_settings_updates(
-    updates: dict[str, Any], original_settings: dict[str, Any]
-) -> None:
+def apply_settings_updates(updates: dict[str, Any], original_settings: dict[str, Any]) -> None:
     """Apply settings updates and save originals for restoration.
 
     Args:
