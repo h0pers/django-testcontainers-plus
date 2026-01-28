@@ -3,7 +3,6 @@
 from typing import Any
 
 from testcontainers.core.generic import DockerContainer
-from testcontainers.core.waiting_utils import wait_for_logs
 
 from .base import ContainerProvider
 
@@ -27,8 +26,12 @@ class MailhogProvider(ContainerProvider):
     def name(self) -> str:
         return "mailhog"
 
-    def can_auto_detect(self, settings: Any) -> bool:
+    def can_auto_detect(self, settings: Any, context: dict[str, Any] | None = None) -> bool:
         """Detect if SMTP email backend is configured.
+
+        Uses original_email_backend from context when available, since Django's
+        test setup overwrites EMAIL_BACKEND with locmem before detection runs.
+        See: https://docs.djangoproject.com/en/5.2/topics/testing/tools/#email-services
 
         Mailhog should be used when:
         - EMAIL_BACKEND is smtp.EmailBackend (explicit)
@@ -40,7 +43,10 @@ class MailhogProvider(ContainerProvider):
         - In-memory backend (for testing without SMTP)
         - Dummy backend (discards emails)
         """
-        email_backend = getattr(settings, "EMAIL_BACKEND", None)
+        if context and context.get("original_email_backend") is not None:
+            email_backend = context["original_email_backend"]
+        else:
+            email_backend = getattr(settings, "EMAIL_BACKEND", None)
 
         # If no backend is set, Django defaults to SMTP, but we shouldn't auto-enable
         # Mailhog unless there's an explicit SMTP backend or EMAIL_HOST is configured
@@ -80,6 +86,8 @@ class MailhogProvider(ContainerProvider):
         http_port = container.get_exposed_port(HTTP_PORT)
 
         updates: dict[str, Any] = {
+            # Restore SMTP backend (Django's test setup may have set it to locmem)
+            "EMAIL_BACKEND": "django.core.mail.backends.smtp.EmailBackend",
             "EMAIL_HOST": host,
             "EMAIL_PORT": int(smtp_port),
             "EMAIL_USE_TLS": False,
@@ -94,7 +102,3 @@ class MailhogProvider(ContainerProvider):
         return {
             "image": "mailhog/mailhog:latest",
         }
-
-    def wait_for_ready(self, container: DockerContainer) -> None:
-        """Wait for Mailhog to be ready to accept connections."""
-        wait_for_logs(container, "Creating API v2 with WebPath")

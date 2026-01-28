@@ -9,6 +9,24 @@ from .manager import ContainerManager
 
 _container_manager: ContainerManager | None = None
 _original_settings: dict[str, Any] = {}
+_context: dict[str, Any] = {}
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """Capture original Django settings before test setup overwrites them.
+
+    Django's setup_test_environment() overwrites certain settings
+    (e.g. EMAIL_BACKEND is set to locmem). We capture originals here
+    so providers can use them for auto-detection.
+    """
+    global _context
+    try:
+        _context = {
+            "original_email_backend": getattr(settings, "EMAIL_BACKEND", None),
+        }
+    except Exception:
+        # Settings may not be configured yet
+        _context = {}
 
 
 @pytest.fixture(scope="session")
@@ -33,7 +51,7 @@ def django_db_setup(
     global _container_manager, _original_settings
 
     # Start containers and get settings updates
-    _container_manager = ContainerManager(settings)
+    _container_manager = ContainerManager(settings, context=_context)
     settings_updates = _container_manager.start_containers()
 
     if settings_updates:
