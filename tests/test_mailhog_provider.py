@@ -23,9 +23,7 @@ class TestMailhogProvider:
 
     def test_can_auto_detect_smtp_backend(self):
         """Test auto-detection with explicit SMTP backend."""
-        settings = MockSettings(
-            EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend")
         provider = MailhogProvider()
 
         assert provider.can_auto_detect(settings) is True
@@ -46,45 +44,35 @@ class TestMailhogProvider:
 
     def test_can_auto_detect_console_backend(self):
         """Test that console backend is skipped."""
-        settings = MockSettings(
-            EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="django.core.mail.backends.console.EmailBackend")
         provider = MailhogProvider()
 
         assert provider.can_auto_detect(settings) is False
 
     def test_can_auto_detect_file_backend(self):
         """Test that file backend is skipped."""
-        settings = MockSettings(
-            EMAIL_BACKEND="django.core.mail.backends.filebased.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="django.core.mail.backends.filebased.EmailBackend")
         provider = MailhogProvider()
 
         assert provider.can_auto_detect(settings) is False
 
     def test_can_auto_detect_locmem_backend(self):
         """Test that in-memory backend is skipped."""
-        settings = MockSettings(
-            EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
         provider = MailhogProvider()
 
         assert provider.can_auto_detect(settings) is False
 
     def test_can_auto_detect_dummy_backend(self):
         """Test that dummy backend is skipped."""
-        settings = MockSettings(
-            EMAIL_BACKEND="django.core.mail.backends.dummy.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="django.core.mail.backends.dummy.EmailBackend")
         provider = MailhogProvider()
 
         assert provider.can_auto_detect(settings) is False
 
     def test_can_auto_detect_custom_backend(self):
         """Test that custom third-party backends are not auto-detected."""
-        settings = MockSettings(
-            EMAIL_BACKEND="anymail.backends.sendgrid.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="anymail.backends.sendgrid.EmailBackend")
         provider = MailhogProvider()
 
         assert provider.can_auto_detect(settings) is False
@@ -96,9 +84,7 @@ class TestMailhogProvider:
         provides the original value captured before the overwrite.
         """
         # Settings reflect Django's test override (locmem)
-        settings = MockSettings(
-            EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
         # Context provides the original value (smtp)
         context = {
             "original_email_backend": "django.core.mail.backends.smtp.EmailBackend",
@@ -109,9 +95,7 @@ class TestMailhogProvider:
 
     def test_can_auto_detect_context_with_non_smtp_original(self):
         """Test that context with non-SMTP original backend is skipped."""
-        settings = MockSettings(
-            EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="django.core.mail.backends.locmem.EmailBackend")
         context = {
             "original_email_backend": "django.core.mail.backends.console.EmailBackend",
         }
@@ -129,9 +113,7 @@ class TestMailhogProvider:
 
     def test_can_auto_detect_empty_context_falls_back_to_settings(self):
         """Test that empty context falls back to reading settings directly."""
-        settings = MockSettings(
-            EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
-        )
+        settings = MockSettings(EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend")
         provider = MailhogProvider()
 
         assert provider.can_auto_detect(settings, context={}) is True

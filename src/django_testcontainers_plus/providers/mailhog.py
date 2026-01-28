@@ -66,10 +66,7 @@ class MailhogProvider(ContainerProvider):
         """Create Mailhog container with configuration."""
         image = config.get("image", "mailhog/mailhog:latest")
 
-        container = (
-            DockerContainer(image)
-            .with_exposed_ports(SMTP_PORT, HTTP_PORT)
-        )
+        container = DockerContainer(image).with_exposed_ports(SMTP_PORT, HTTP_PORT)
 
         env = config.get("environment", {})
         for key, value in env.items():
