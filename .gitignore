@@ -16,6 +16,9 @@ htmlcov/
 coverage.xml
 .pytest_cache/
 
+# MkDocs build output
+site/
+
 # IDE and editor files
 .vscode/
 .idea/
