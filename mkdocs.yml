@@ -1,0 +1,109 @@
+site_name: Django Testcontainers Plus
+site_description: A plug-and-play testcontainers integration for Django
+site_url: https://django-testcontainers-plus.readthedocs.io/
+repo_name: WoodyWoodster/django-testcontainers-plus
+repo_url: https://github.com/WoodyWoodster/django-testcontainers-plus
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - navigation.footer
+    - search.highlight
+    - search.share
+    - search.suggest
+    - content.code.copy
+    - content.code.annotate
+    - content.tabs.link
+    - toc.follow
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/docker
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            members_order: source
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+
+nav:
+  - Getting Started:
+    - Home: index.md
+    - Installation: pages/getting-started/installation.md
+    - Quick Start: pages/getting-started/quickstart.md
+  - User Guide:
+    - Configuration: pages/user-guide/configuration.md
+    - How It Works: pages/user-guide/how-it-works.md
+  - Providers:
+    - PostgreSQL: pages/providers/postgres.md
+    - MySQL / MariaDB: pages/providers/mysql.md
+    - Redis: pages/providers/redis.md
+  - API Reference:
+    - Overview: pages/api-reference/index.md
+    - Providers: pages/api-reference/providers.md
+  - Help:
+    - Troubleshooting: pages/help/troubleshooting.md
+    - Contributing: pages/help/contributing.md
+    - Changelog: pages/help/changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/WoodyWoodster/django-testcontainers-plus
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/django-testcontainers-plus/
+  version:
+    provider: mike
+
+extra_css:
+  - stylesheets/extra.css

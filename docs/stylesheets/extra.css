@@ -1,0 +1,94 @@
+/* Custom styles for django-testcontainers-plus docs */
+
+/* Primary colour variables (deep purple) */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #673ab7;
+  --md-primary-fg-color--light: #9575cd;
+  --md-primary-fg-color--dark: #512da8;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #7e57c2;
+  --md-primary-fg-color--light: #9575cd;
+  --md-primary-fg-color--dark: #512da8;
+  --md-primary-bg-color: #ffffff;
+  --md-primary-bg-color--light: rgba(255, 255, 255, 0.7);
+}
+
+/* Header */
+.md-header {
+  background-color: var(--md-primary-fg-color);
+  color: #ffffff;
+}
+
+.md-header__inner {
+  align-items: center;
+}
+
+.md-header__button.md-logo {
+  margin: 0.2rem 0;
+  padding: 0.2rem 0.1rem;
+}
+
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.md-header__title {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-left: 0.1rem;
+}
+
+/* Center the h1 title on the home page */
+.md-typeset h1 {
+  text-align: center;
+  margin-bottom: 0.2rem;
+}
+
+/* Grid cards layout (used on home page) */
+.md-typeset .grid.cards > ul {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  padding: 0;
+}
+
+.md-typeset .grid.cards > ul > li {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-top: 4px solid var(--md-primary-fg-color);
+  border-radius: 0.4rem;
+  padding: 1rem;
+  list-style: none;
+  background: var(--md-code-bg-color);
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+.md-typeset .grid.cards > ul > li:hover {
+  border-top-color: var(--md-accent-fg-color);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.md-typeset .grid.cards > ul > li ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.md-typeset .grid.cards > ul > li p:first-child {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
+.md-typeset .grid.cards > ul > li .twemoji {
+  color: #f4b400;
+}
+
+.md-typeset .grid.cards > ul > li .twemoji svg {
+  fill: #f4b400;
+}
