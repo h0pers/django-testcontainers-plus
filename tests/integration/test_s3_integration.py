@@ -1,11 +1,32 @@
 """Integration tests for S3Provider with a real RustFS container."""
 
+import time
+
 import boto3
 import pytest
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, EndpointConnectionError
 
 from django_testcontainers_plus.providers.s3 import S3Provider
 from tests.helpers import MockSettings
+
+
+def _wait_for_s3(endpoint_url: str, retries: int = 10, delay: float = 1.0) -> None:
+    """Wait until the S3 endpoint is accepting connections."""
+    client = boto3.client(
+        "s3",
+        endpoint_url=endpoint_url,
+        aws_access_key_id="rustfsadmin",
+        aws_secret_access_key="rustfsadmin",
+        region_name="us-east-1",
+    )
+    for attempt in range(retries):
+        try:
+            client.list_buckets()
+            return
+        except (EndpointConnectionError, ConnectionError):
+            if attempt == retries - 1:
+                raise
+            time.sleep(delay)
 
 
 class TestS3Integration:
@@ -20,9 +41,12 @@ class TestS3Integration:
         container.start()
         host = container.get_container_host_ip()
         port = container.get_exposed_port(9000)
+        endpoint_url = f"http://{host}:{port}"
+
+        _wait_for_s3(endpoint_url)
 
         request.cls.container = container
-        request.cls.endpoint_url = f"http://{host}:{port}"
+        request.cls.endpoint_url = endpoint_url
 
         yield
 
@@ -34,6 +58,7 @@ class TestS3Integration:
             endpoint_url=self.endpoint_url,
             aws_access_key_id="rustfsadmin",
             aws_secret_access_key="rustfsadmin",
+            region_name="us-east-1",
         )
 
     def test_container_starts_and_accepts_connections(self):

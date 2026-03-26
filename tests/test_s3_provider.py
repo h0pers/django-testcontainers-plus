@@ -51,6 +51,20 @@ class TestS3Provider:
         settings = MockSettings(DEFAULT_FILE_STORAGE="storages.backends.s3boto3.S3Boto3Storage")
         assert S3Provider().can_auto_detect(settings) is True
 
+    def test_can_auto_detect_modern_s3_backend(self):
+        settings = MockSettings(
+            STORAGES={
+                "default": {
+                    "BACKEND": "storages.backends.s3.S3Storage",
+                }
+            }
+        )
+        assert S3Provider().can_auto_detect(settings) is True
+
+    def test_can_auto_detect_modern_s3_default_file_storage(self):
+        settings = MockSettings(DEFAULT_FILE_STORAGE="storages.backends.s3.S3Storage")
+        assert S3Provider().can_auto_detect(settings) is True
+
     def test_can_auto_detect_aws_bucket_name(self):
         settings = MockSettings(AWS_STORAGE_BUCKET_NAME="my-bucket")
         assert S3Provider().can_auto_detect(settings) is True

@@ -37,7 +37,10 @@ pip install django-testcontainers-plus[mysql]
 # Redis support
 pip install django-testcontainers-plus[redis]
 
-# Or install both
+# S3 support (RustFS)
+pip install django-testcontainers-plus[s3]
+
+# Or install all
 pip install django-testcontainers-plus[all]
 ```
 
@@ -325,6 +328,9 @@ pip install django-testcontainers-plus[mysql]
 
 # For Redis
 pip install django-testcontainers-plus[redis]
+
+# For S3 (RustFS)
+pip install django-testcontainers-plus[s3]
 
 # Or install everything
 pip install django-testcontainers-plus[all]

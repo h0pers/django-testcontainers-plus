@@ -31,8 +31,8 @@ class S3Provider(ContainerProvider):
         """Detect if S3 storage is configured in Django settings.
 
         Checks for:
-        1. Django 4.2+ STORAGES setting with s3boto3 backend
-        2. Legacy DEFAULT_FILE_STORAGE with s3boto3 backend
+        1. Django 4.2+ STORAGES setting with S3 backend
+        2. Legacy DEFAULT_FILE_STORAGE with S3 backend
         3. AWS_STORAGE_BUCKET_NAME present (implies S3 usage)
         """
         # Check Django 4.2+ STORAGES setting
@@ -40,13 +40,13 @@ class S3Provider(ContainerProvider):
         if isinstance(storages, dict):
             for storage_config in storages.values():
                 if isinstance(storage_config, dict):
-                    backend = storage_config.get("BACKEND", "").lower()
-                    if "s3boto3" in backend:
+                    backend = str(storage_config.get("BACKEND", "")).lower()
+                    if self._is_s3_backend(backend):
                         return True
 
         # Check legacy DEFAULT_FILE_STORAGE
-        default_storage = getattr(settings, "DEFAULT_FILE_STORAGE", "").lower()
-        if "s3boto3" in default_storage:
+        default_storage = str(getattr(settings, "DEFAULT_FILE_STORAGE", "")).lower()
+        if self._is_s3_backend(default_storage):
             return True
 
         # Check for AWS_STORAGE_BUCKET_NAME (implies S3 usage)
@@ -117,6 +117,11 @@ class S3Provider(ContainerProvider):
             "bucket_name": DEFAULT_BUCKET_NAME,
         }
 
+    @staticmethod
+    def _is_s3_backend(backend: str) -> bool:
+        """Check if a backend string refers to an S3 storage backend."""
+        return "s3boto3" in backend or "storages.backends.s3." in backend
+
     def _create_bucket(
         self,
         endpoint_url: str,
@@ -132,6 +137,7 @@ class S3Provider(ContainerProvider):
             endpoint_url=endpoint_url,
             aws_access_key_id=access_key,
             aws_secret_access_key=secret_key,
+            region_name="us-east-1",
         )
 
         for attempt in range(retries):
@@ -139,10 +145,7 @@ class S3Provider(ContainerProvider):
                 client.create_bucket(Bucket=bucket_name)
                 return
             except ClientError as e:
-                if e.response["Error"]["Code"] in (
-                    "BucketAlreadyOwnedByYou",
-                    "BucketAlreadyExists",
-                ):
+                if e.response["Error"]["Code"] == "BucketAlreadyOwnedByYou":
                     return
                 raise
             except EndpointConnectionError:
