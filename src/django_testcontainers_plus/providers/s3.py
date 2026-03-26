@@ -1,9 +1,10 @@
 """S3-compatible object storage provider using RustFS."""
 
+import time
 from typing import Any
 
 import boto3
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, EndpointConnectionError
 from testcontainers.core.generic import DockerContainer
 
 from .base import ContainerProvider
@@ -39,12 +40,12 @@ class S3Provider(ContainerProvider):
         if isinstance(storages, dict):
             for storage_config in storages.values():
                 if isinstance(storage_config, dict):
-                    backend = storage_config.get("BACKEND", "")
+                    backend = storage_config.get("BACKEND", "").lower()
                     if "s3boto3" in backend:
                         return True
 
         # Check legacy DEFAULT_FILE_STORAGE
-        default_storage = getattr(settings, "DEFAULT_FILE_STORAGE", "")
+        default_storage = getattr(settings, "DEFAULT_FILE_STORAGE", "").lower()
         if "s3boto3" in default_storage:
             return True
 
@@ -117,9 +118,15 @@ class S3Provider(ContainerProvider):
         }
 
     def _create_bucket(
-        self, endpoint_url: str, access_key: str, secret_key: str, bucket_name: str
+        self,
+        endpoint_url: str,
+        access_key: str,
+        secret_key: str,
+        bucket_name: str,
+        retries: int = 10,
+        delay: float = 1.0,
     ) -> None:
-        """Create the S3 bucket using boto3."""
+        """Create the S3 bucket using boto3, retrying until the container is ready."""
         client = boto3.client(
             "s3",
             endpoint_url=endpoint_url,
@@ -127,12 +134,18 @@ class S3Provider(ContainerProvider):
             aws_secret_access_key=secret_key,
         )
 
-        try:
-            client.create_bucket(Bucket=bucket_name)
-        except ClientError as e:
-            # Bucket already exists is fine
-            if e.response["Error"]["Code"] not in (
-                "BucketAlreadyOwnedByYou",
-                "BucketAlreadyExists",
-            ):
+        for attempt in range(retries):
+            try:
+                client.create_bucket(Bucket=bucket_name)
+                return
+            except ClientError as e:
+                if e.response["Error"]["Code"] in (
+                    "BucketAlreadyOwnedByYou",
+                    "BucketAlreadyExists",
+                ):
+                    return
                 raise
+            except EndpointConnectionError:
+                if attempt == retries - 1:
+                    raise
+                time.sleep(delay)

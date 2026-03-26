@@ -192,11 +192,11 @@ class ContainerManager:
             if isinstance(storages, dict):
                 for storage_name, storage_config in storages.items():
                     if isinstance(storage_config, dict):
-                        backend = storage_config.get("BACKEND", "")
+                        backend = storage_config.get("BACKEND", "").lower()
                         if "s3boto3" in backend:
                             return f"STORAGES['{storage_name}']['BACKEND']"
 
-            default_storage = getattr(self.settings, "DEFAULT_FILE_STORAGE", "")
+            default_storage = getattr(self.settings, "DEFAULT_FILE_STORAGE", "").lower()
             if "s3boto3" in default_storage:
                 return "DEFAULT_FILE_STORAGE"
 
