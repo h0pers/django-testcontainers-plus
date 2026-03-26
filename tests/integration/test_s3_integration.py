@@ -11,20 +11,22 @@ from tests.test_s3_provider import MockSettings
 class TestS3Integration:
     """Test S3Provider against a real RustFS container."""
 
-    @pytest.fixture(autouse=True)
-    def s3_container(self):
+    @pytest.fixture(scope="class", autouse=True)
+    def s3_container(self, request):
         """Start a real RustFS container for the test class."""
         provider = S3Provider()
         config = provider.get_default_config()
-        self.container = provider.get_container(config)
-        self.container.start()
-        self.host = self.container.get_container_host_ip()
-        self.port = self.container.get_exposed_port(9000)
-        self.endpoint_url = f"http://{self.host}:{self.port}"
+        container = provider.get_container(config)
+        container.start()
+        host = container.get_container_host_ip()
+        port = container.get_exposed_port(9000)
+
+        request.cls.container = container
+        request.cls.endpoint_url = f"http://{host}:{port}"
 
         yield
 
-        self.container.stop()
+        container.stop()
 
     def _get_client(self):
         return boto3.client(
