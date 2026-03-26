@@ -1,0 +1,142 @@
+"""S3-compatible object storage provider using RustFS."""
+
+from typing import Any
+
+import boto3
+from botocore.exceptions import ClientError
+from testcontainers.core.generic import DockerContainer
+
+from .base import ContainerProvider
+
+# Default ports for S3-compatible services
+S3_API_PORT = 9000
+CONSOLE_PORT = 9001
+
+# Default credentials for RustFS
+DEFAULT_ACCESS_KEY = "rustfsadmin"
+DEFAULT_SECRET_KEY = "rustfsadmin"
+
+DEFAULT_BUCKET_NAME = "test-bucket"
+
+
+class S3Provider(ContainerProvider):
+    """Provider for S3-compatible object storage containers (RustFS by default)."""
+
+    @property
+    def name(self) -> str:
+        return "s3"
+
+    def can_auto_detect(self, settings: Any, context: dict[str, Any] | None = None) -> bool:
+        """Detect if S3 storage is configured in Django settings.
+
+        Checks for:
+        1. Django 4.2+ STORAGES setting with s3boto3 backend
+        2. Legacy DEFAULT_FILE_STORAGE with s3boto3 backend
+        3. AWS_STORAGE_BUCKET_NAME present (implies S3 usage)
+        """
+        # Check Django 4.2+ STORAGES setting
+        storages = getattr(settings, "STORAGES", {})
+        if isinstance(storages, dict):
+            for storage_config in storages.values():
+                if isinstance(storage_config, dict):
+                    backend = storage_config.get("BACKEND", "")
+                    if "s3boto3" in backend:
+                        return True
+
+        # Check legacy DEFAULT_FILE_STORAGE
+        default_storage = getattr(settings, "DEFAULT_FILE_STORAGE", "")
+        if "s3boto3" in default_storage:
+            return True
+
+        # Check for AWS_STORAGE_BUCKET_NAME (implies S3 usage)
+        bucket_name = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "")
+        if bucket_name:
+            return True
+
+        return False
+
+    def get_container(self, config: dict[str, Any]) -> DockerContainer:
+        """Create S3-compatible container with configuration."""
+        image = config.get("image", "rustfs/rustfs")
+        access_key = config.get("access_key", DEFAULT_ACCESS_KEY)
+        secret_key = config.get("secret_key", DEFAULT_SECRET_KEY)
+
+        container = (
+            DockerContainer(image)
+            .with_exposed_ports(S3_API_PORT, CONSOLE_PORT)
+            .with_env("RUSTFS_ACCESS_KEY", access_key)
+            .with_env("RUSTFS_SECRET_KEY", secret_key)
+            .with_env("RUSTFS_CONSOLE_ENABLE", "true")
+            .with_command("/data")
+        )
+
+        env = config.get("environment", {})
+        for key, value in env.items():
+            container = container.with_env(key, value)
+
+        return container
+
+    def update_settings(
+        self, container: DockerContainer, settings: Any, config: dict[str, Any]
+    ) -> dict[str, Any]:
+        """Update Django settings with container connection info and create bucket."""
+        host = container.get_container_host_ip()
+        api_port = container.get_exposed_port(S3_API_PORT)
+        console_port = container.get_exposed_port(CONSOLE_PORT)
+
+        access_key = config.get("access_key", DEFAULT_ACCESS_KEY)
+        secret_key = config.get("secret_key", DEFAULT_SECRET_KEY)
+
+        endpoint_url = f"http://{host}:{api_port}"
+
+        updates: dict[str, Any] = {
+            "AWS_S3_ENDPOINT_URL": endpoint_url,
+            "S3_CONSOLE_URL": f"http://{host}:{console_port}",
+        }
+
+        # Only set credentials if not already configured in settings
+        if not getattr(settings, "AWS_ACCESS_KEY_ID", ""):
+            updates["AWS_ACCESS_KEY_ID"] = access_key
+        if not getattr(settings, "AWS_SECRET_ACCESS_KEY", ""):
+            updates["AWS_SECRET_ACCESS_KEY"] = secret_key
+
+        # Auto-create the bucket
+        bucket_name = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "") or config.get(
+            "bucket_name", DEFAULT_BUCKET_NAME
+        )
+        self._create_bucket(endpoint_url, access_key, secret_key, bucket_name)
+
+        # Ensure bucket name is set in settings
+        if not getattr(settings, "AWS_STORAGE_BUCKET_NAME", ""):
+            updates["AWS_STORAGE_BUCKET_NAME"] = bucket_name
+
+        return updates
+
+    def get_default_config(self) -> dict[str, Any]:
+        return {
+            "image": "rustfs/rustfs",
+            "access_key": DEFAULT_ACCESS_KEY,
+            "secret_key": DEFAULT_SECRET_KEY,
+            "bucket_name": DEFAULT_BUCKET_NAME,
+        }
+
+    def _create_bucket(
+        self, endpoint_url: str, access_key: str, secret_key: str, bucket_name: str
+    ) -> None:
+        """Create the S3 bucket using boto3."""
+        client = boto3.client(
+            "s3",
+            endpoint_url=endpoint_url,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key,
+        )
+
+        try:
+            client.create_bucket(Bucket=bucket_name)
+        except ClientError as e:
+            # Bucket already exists is fine
+            if e.response["Error"]["Code"] not in (
+                "BucketAlreadyOwnedByYou",
+                "BucketAlreadyExists",
+            ):
+                raise

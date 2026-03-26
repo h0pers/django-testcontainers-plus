@@ -12,7 +12,7 @@ Testing Django applications often requires external services like PostgreSQL, Re
 - **Zero Configuration**: Automatically detects your database and service needs from Django settings
 - **Plug and Play**: Install, add to settings, and go - no manual container management
 - **Database Agnostic**: Supports PostgreSQL, MySQL, MariaDB, and more
-- **Beyond Databases**: Redis for caching, MinIO for S3, and other services
+- **Beyond Databases**: Redis for caching, S3-compatible storage, and other services
 - **Dual Compatibility**: Works with both Django's test runner and pytest
 - **Smart Defaults**: Sensible defaults with full customization when needed
 
@@ -103,7 +103,7 @@ pytest
 
 - Redis - Auto-detected from cache/Celery settings
 - Mailhog - Auto-detected from SMTP email backend
-- MinIO - S3-compatible storage (coming soon)
+- S3 (RustFS) - Auto-detected from django-storages S3 backend
 - Elasticsearch - Search (coming soon)
 
 ## Configuration
@@ -399,7 +399,7 @@ uv run mypy src/
 - [x] pytest plugin
 - [x] Mailhog support
 - [ ] MongoDB support
-- [ ] MinIO (S3) support
+- [x] S3-compatible object storage (RustFS)
 - [ ] Elasticsearch support
 - [ ] RabbitMQ support
 - [ ] Container reuse between test runs

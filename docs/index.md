@@ -98,7 +98,7 @@ Testing Django applications often requires real external services like PostgreSQ
 | **MySQL / MariaDB** | `DATABASES` engine | `[mysql]` |
 | **Redis** | `CACHES`, `CELERY_BROKER_URL`, `SESSION_ENGINE` | `[redis]` |
 | MongoDB | Coming soon | - |
-| MinIO (S3) | Coming soon | - |
+| **S3 (RustFS)** | `STORAGES`, `DEFAULT_FILE_STORAGE`, `AWS_STORAGE_BUCKET_NAME` | `[s3]` |
 | Elasticsearch | Coming soon | - |
 
 ## Next Steps

@@ -187,6 +187,23 @@ class ContainerManager:
             if "redis" in session_engine.lower():
                 return "SESSION_ENGINE"
 
+        elif provider_name == "s3":
+            storages = getattr(self.settings, "STORAGES", {})
+            if isinstance(storages, dict):
+                for storage_name, storage_config in storages.items():
+                    if isinstance(storage_config, dict):
+                        backend = storage_config.get("BACKEND", "")
+                        if "s3boto3" in backend:
+                            return f"STORAGES['{storage_name}']['BACKEND']"
+
+            default_storage = getattr(self.settings, "DEFAULT_FILE_STORAGE", "")
+            if "s3boto3" in default_storage:
+                return "DEFAULT_FILE_STORAGE"
+
+            bucket_name = getattr(self.settings, "AWS_STORAGE_BUCKET_NAME", "")
+            if bucket_name:
+                return "AWS_STORAGE_BUCKET_NAME"
+
         return None
 
     def _raise_missing_dependency_error(
