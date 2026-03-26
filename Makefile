@@ -8,7 +8,7 @@ help:
 	@echo "  make format     - Auto-format code with ruff"
 	@echo "  make lint       - Run ruff linting"
 	@echo "  make typecheck  - Run mypy type checking"
-	@echo "  make test       - Run pytest tests"
+	@echo "  make test       - Run all tests (requires Docker)"
 	@echo "  make coverage   - Run tests with coverage report"
 	@echo "  make check      - Run all checks (lint, typecheck, test)"
 	@echo "  make clean      - Remove generated files"

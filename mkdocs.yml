@@ -88,6 +88,7 @@ nav:
     - PostgreSQL: pages/providers/postgres.md
     - MySQL / MariaDB: pages/providers/mysql.md
     - Redis: pages/providers/redis.md
+    - S3 (Object Storage): pages/providers/s3.md
   - API Reference:
     - Overview: pages/api-reference/index.md
     - Providers: pages/api-reference/providers.md

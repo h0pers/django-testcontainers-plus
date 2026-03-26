@@ -4,14 +4,7 @@ from unittest.mock import Mock
 
 from django_testcontainers_plus.manager import ContainerManager
 from django_testcontainers_plus.providers.base import ContainerProvider
-
-
-class MockSettings:
-    """Mock Django settings object."""
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+from tests.helpers import MockSettings
 
 
 class MockProvider(ContainerProvider):

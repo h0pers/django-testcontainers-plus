@@ -9,14 +9,7 @@ from django_testcontainers_plus.exceptions import (
     MissingDependencyError,
 )
 from django_testcontainers_plus.manager import ContainerManager
-
-
-class MockSettings:
-    """Mock Django settings object."""
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+from tests.helpers import MockSettings
 
 
 class TestMissingDependencyError:

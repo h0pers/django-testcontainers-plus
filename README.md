@@ -12,7 +12,7 @@ Testing Django applications often requires external services like PostgreSQL, Re
 - **Zero Configuration**: Automatically detects your database and service needs from Django settings
 - **Plug and Play**: Install, add to settings, and go - no manual container management
 - **Database Agnostic**: Supports PostgreSQL, MySQL, MariaDB, and more
-- **Beyond Databases**: Redis for caching, MinIO for S3, and other services
+- **Beyond Databases**: Redis for caching, S3-compatible storage, and other services
 - **Dual Compatibility**: Works with both Django's test runner and pytest
 - **Smart Defaults**: Sensible defaults with full customization when needed
 
@@ -37,7 +37,10 @@ pip install django-testcontainers-plus[mysql]
 # Redis support
 pip install django-testcontainers-plus[redis]
 
-# Or install both
+# S3 support (RustFS)
+pip install django-testcontainers-plus[s3]
+
+# Or install all
 pip install django-testcontainers-plus[all]
 ```
 
@@ -103,7 +106,7 @@ pytest
 
 - Redis - Auto-detected from cache/Celery settings
 - Mailhog - Auto-detected from SMTP email backend
-- MinIO - S3-compatible storage (coming soon)
+- S3 (RustFS) - Auto-detected from django-storages S3 backend
 - Elasticsearch - Search (coming soon)
 
 ## Configuration
@@ -326,6 +329,9 @@ pip install django-testcontainers-plus[mysql]
 # For Redis
 pip install django-testcontainers-plus[redis]
 
+# For S3 (RustFS)
+pip install django-testcontainers-plus[s3]
+
 # Or install everything
 pip install django-testcontainers-plus[all]
 ```
@@ -399,7 +405,7 @@ uv run mypy src/
 - [x] pytest plugin
 - [x] Mailhog support
 - [ ] MongoDB support
-- [ ] MinIO (S3) support
+- [x] S3-compatible object storage (RustFS)
 - [ ] Elasticsearch support
 - [ ] RabbitMQ support
 - [ ] Container reuse between test runs
