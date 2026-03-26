@@ -5,7 +5,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from django_testcontainers_plus.providers.s3 import S3Provider
-from tests.test_s3_provider import MockSettings
+from tests.helpers import MockSettings
 
 
 class TestS3Integration:

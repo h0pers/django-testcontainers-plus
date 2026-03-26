@@ -6,14 +6,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from django_testcontainers_plus.providers.s3 import S3Provider
-
-
-class MockSettings:
-    """Mock Django settings object."""
-
-    def __init__(self, **kwargs):
-        for key, value in kwargs.items():
-            setattr(self, key, value)
+from tests.helpers import MockSettings
 
 
 def _mock_container(host="127.0.0.1", api_port=32768, console_port=32769):
