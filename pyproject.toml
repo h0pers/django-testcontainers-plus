@@ -43,6 +43,10 @@ dev = [
     "mypy>=1.8.0",
     "django-stubs>=4.2.0",
 ]
+docs = [
+    "mkdocs-material>=9.0.0",
+    "mkdocstrings[python]>=0.25.0",
+]
 mysql = [
     "mysql-connector-python>=8.0.0",
 ]
@@ -57,7 +61,7 @@ all = [
 [project.urls]
 Homepage = "https://github.com/woodywoodster/django-testcontainers-plus"
 Repository = "https://github.com/woodywoodster/django-testcontainers-plus"
-Documentation = "https://github.com/woodywoodster/django-testcontainers-plus#readme"
+Documentation = "https://django-testcontainers-plus.readthedocs.io/"
 Issues = "https://github.com/woodywoodster/django-testcontainers-plus/issues"
 
 [build-system]
