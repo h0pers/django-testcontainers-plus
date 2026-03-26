@@ -179,7 +179,7 @@ class TestS3Provider:
         assert updates["AWS_SECRET_ACCESS_KEY"] == "rustfsadmin"
 
     @patch.object(S3Provider, "_create_bucket")
-    def test_update_settings_preserves_existing_credentials(self, mock_create_bucket):
+    def test_update_settings_overrides_existing_credentials(self, mock_create_bucket):
         settings = MockSettings(
             AWS_ACCESS_KEY_ID="existing-key",
             AWS_SECRET_ACCESS_KEY="existing-secret",
@@ -189,8 +189,8 @@ class TestS3Provider:
 
         updates = S3Provider().update_settings(_mock_container(), settings, config)
 
-        assert "AWS_ACCESS_KEY_ID" not in updates
-        assert "AWS_SECRET_ACCESS_KEY" not in updates
+        assert updates["AWS_ACCESS_KEY_ID"] == "rustfsadmin"
+        assert updates["AWS_SECRET_ACCESS_KEY"] == "rustfsadmin"
 
     @patch.object(S3Provider, "_create_bucket")
     def test_update_settings_default_bucket(self, mock_create_bucket):

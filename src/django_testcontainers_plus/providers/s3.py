@@ -91,14 +91,10 @@ class S3Provider(ContainerProvider):
 
         updates: dict[str, Any] = {
             "AWS_S3_ENDPOINT_URL": endpoint_url,
+            "AWS_ACCESS_KEY_ID": access_key,
+            "AWS_SECRET_ACCESS_KEY": secret_key,
             "S3_CONSOLE_URL": f"http://{host}:{console_port}",
         }
-
-        # Only set credentials if not already configured in settings
-        if not getattr(settings, "AWS_ACCESS_KEY_ID", ""):
-            updates["AWS_ACCESS_KEY_ID"] = access_key
-        if not getattr(settings, "AWS_SECRET_ACCESS_KEY", ""):
-            updates["AWS_SECRET_ACCESS_KEY"] = secret_key
 
         # Auto-create the bucket
         bucket_name = getattr(settings, "AWS_STORAGE_BUCKET_NAME", "") or config.get(
