@@ -420,11 +420,11 @@ dependencies = [
 [package.optional-dependencies]
 all = [
     { name = "boto3" },
-    { name = "boto3-stubs" },
     { name = "mysql-connector-python" },
     { name = "redis" },
 ]
 dev = [
+    { name = "boto3-stubs" },
     { name = "django-stubs" },
     { name = "mypy" },
     { name = "pytest" },
@@ -444,15 +444,13 @@ redis = [
 ]
 s3 = [
     { name = "boto3" },
-    { name = "boto3-stubs" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "boto3", marker = "extra == 'all'", specifier = ">=1.28.0" },
     { name = "boto3", marker = "extra == 's3'", specifier = ">=1.28.0" },
-    { name = "boto3-stubs", marker = "extra == 'all'", specifier = ">=1.28.0" },
-    { name = "boto3-stubs", marker = "extra == 's3'", specifier = ">=1.28.0" },
+    { name = "boto3-stubs", marker = "extra == 'dev'", specifier = ">=1.28.0" },
     { name = "django", specifier = ">=4.2" },
     { name = "django-stubs", marker = "extra == 'dev'", specifier = ">=4.2.0" },
     { name = "mkdocs-material", marker = "extra == 'docs'", specifier = ">=9.0.0" },
