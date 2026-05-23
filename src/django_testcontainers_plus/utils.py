@@ -3,6 +3,7 @@
 from typing import Any
 
 from django.conf import settings
+from django.core.cache import caches
 from django.db import connections
 
 
@@ -58,3 +59,24 @@ def recreate_database_connections() -> None:
     # Explicitly recreate connections with new settings
     for alias in settings.DATABASES:
         connections[alias] = connections.create_connection(alias)
+
+
+def recreate_cache_connections() -> None:
+    """Recreate Django cache backends with current settings.
+
+    This is needed after updating CACHES settings to ensure Django uses the
+    new connection parameters instead of cached backends.
+    """
+    # Clear Django's cached settings property
+    if "settings" in caches.__dict__:
+        del caches.__dict__["settings"]
+
+    # Reconfigure caches with updated settings
+    caches._settings = caches.configure_settings(settings.CACHES)  # type: ignore[attr-defined]
+
+    # Close all existing cache backends
+    caches.close_all()
+
+    # Explicitly recreate cache backends with new settings
+    for alias in settings.CACHES:
+        caches[alias] = caches.create_connection(alias)

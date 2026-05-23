@@ -5,7 +5,12 @@ import pytest
 from django.conf import settings
 
 from .manager import ContainerManager
-from .utils import apply_settings_updates, recreate_database_connections, restore_settings
+from .utils import (
+    apply_settings_updates,
+    recreate_cache_connections,
+    recreate_database_connections,
+    restore_settings,
+)
 
 _container_manager: ContainerManager | None = None
 _original_settings: dict[str, Any] = {}
@@ -56,7 +61,10 @@ def django_db_setup(
 
     if settings_updates:
         apply_settings_updates(settings_updates, _original_settings)
-        recreate_database_connections()
+        if "DATABASES" in settings_updates:
+            recreate_database_connections()
+        if "CACHES" in settings_updates:
+            recreate_cache_connections()
 
     # Now run pytest-django's database setup logic
     from django.test.utils import setup_databases, teardown_databases
