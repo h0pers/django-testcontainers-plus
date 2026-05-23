@@ -4,7 +4,12 @@ from django.conf import settings
 from django.test.runner import DiscoverRunner
 
 from .manager import ContainerManager
-from .utils import apply_settings_updates, recreate_database_connections, restore_settings
+from .utils import (
+    apply_settings_updates,
+    recreate_cache_connections,
+    recreate_database_connections,
+    restore_settings,
+)
 
 
 class TestcontainersRunner(DiscoverRunner):
@@ -50,7 +55,10 @@ class TestcontainersRunner(DiscoverRunner):
 
         if settings_updates:
             apply_settings_updates(settings_updates, self.original_settings)
-            recreate_database_connections()
+            if "DATABASES" in settings_updates:
+                recreate_database_connections()
+            if "CACHES" in settings_updates:
+                recreate_cache_connections()
 
         if self.verbosity >= 1:
             for provider_name in self.container_manager.active_containers.keys():
